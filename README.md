@@ -1,2 +1,2 @@
 # TooManySuits
-A mod which adds a suit rack to the game Lethal Company
+A mod which adds suit rack pagination to the game Lethal Company
