@@ -136,7 +136,7 @@ public class PluginLoader : MonoBehaviour
         if (LocalPlayer.localPlayer.isInHangarShipRoom)
         {
             var textMesh = Hooks.SuitPanel.GetComponentInChildren<TextMeshProUGUI>();
-            textMesh.text = $"Page {currentPage + 1}/{suitsLength / suitsPerPage + 1}";
+            textMesh.text = $"Page {currentPage + 1}/{Mathf.CeilToInt((float)suitsLength / suitsPerPage)}";
 
             Hooks.SuitPanel.SetActive(true);
 
