@@ -11,7 +11,7 @@ using UnityEngine.InputSystem;
 
 namespace TooManySuits;
 
-[BepInPlugin("verity.TooManySuits", "Too Many Suits", "1.0.4")]
+[BepInPlugin("verity.TooManySuits", "Too Many Suits", "1.0.7")]
 [BepInDependency("x753.More_Suits")]
 public class Plugin : BaseUnityPlugin
 {
@@ -29,7 +29,7 @@ public class Plugin : BaseUnityPlugin
         NextButton = Config.Bind("General", "Next-Page-Keybind", "<Keyboard>/n", "Next page button.");
         BackButton = Config.Bind("General", "Back-Page-Keybind", "<Keyboard>/b", "Back page button.");
 
-        TextScale = Config.Bind("General", "Text-Scale", 0.003f, "Size of the text above the suit rack.");
+        TextScale = Config.Bind("General", "Text-Scale", 0.005f, "Size of the text above the suit rack.");
         
         var pluginLoader = new GameObject("TooManySuits");
         pluginLoader.AddComponent<PluginLoader>();
@@ -50,7 +50,7 @@ public class PluginLoader : MonoBehaviour
 
 
     private int suitsLength;
-    private UnlockableSuit[] allSuits = null!;
+    private static UnlockableSuit[] allSuits = null!;
 
     private static AssetBundle suitSelectBundle = null!;
 
@@ -87,8 +87,14 @@ public class PluginLoader : MonoBehaviour
     private void Update()
     {
         if (StartOfRound.Instance == null) return;
-        allSuits = Resources.FindObjectsOfTypeAll<UnlockableSuit>().OrderBy(suit => suit.syncedSuitID.Value).ToArray();
-        DisplaySuits();
+        try
+        {
+            DisplaySuits();
+        }
+        catch
+        {
+            //Cba to fix null reference exception
+        }
     }
 
     private void DisplaySuits()
@@ -131,15 +137,9 @@ public class PluginLoader : MonoBehaviour
 
         suitsLength = allSuits.Length;
 
-        if (!LocalPlayer.isActive()) return;
-
         if (LocalPlayer.localPlayer.isInHangarShipRoom)
         {
-            var textMesh = Hooks.SuitPanel.GetComponentInChildren<TextMeshProUGUI>();
-            textMesh.text = $"Page {currentPage + 1}/{Mathf.CeilToInt((float)suitsLength / suitsPerPage)}";
-
             Hooks.SuitPanel.SetActive(true);
-
             return;
         }
 
@@ -149,27 +149,40 @@ public class PluginLoader : MonoBehaviour
 
         Hooks.SetUI = false;
 
-        Hooks.SuitPanel.GetComponentInParent<Canvas>().renderMode = RenderMode.WorldSpace;
-        Hooks.SuitPanel.GetComponentInParent<Canvas>().worldCamera = LocalPlayer.localPlayer.gameplayCamera;
+        Hooks.SuitPanel.GetComponentInChildren<Canvas>().renderMode = RenderMode.WorldSpace;
+        Hooks.SuitPanel.GetComponentInChildren<Canvas>().worldCamera = LocalPlayer.localPlayer.gameplayCamera;
 
-        Hooks.SuitPanel.transform.position =
+        Hooks.SuitPanel.GetComponentInChildren<Canvas>().transform.position =
             StartOfRound.Instance.shipBounds.bounds.center - new Vector3(2.8992f, 0.7998f, 2f);
-        Hooks.SuitPanel.transform.rotation = Quaternion.Euler(0, 180, 0);
-        Hooks.SuitPanel.transform.localScale =
+        Hooks.SuitPanel.GetComponentInChildren<Canvas>().transform.rotation = Quaternion.Euler(0, 180, 0);
+        Hooks.SuitPanel.GetComponentInChildren<Canvas>().transform.localScale =
             new Vector3(Plugin.TextScale.Value, Plugin.TextScale.Value, Plugin.TextScale.Value);
 
+        SetPageText();
+        
         Hooks.SuitPanel.SetActive(true);
     }
 
     private void MoveRightAction(InputAction.CallbackContext obj)
     {
-        currentPage = Mathf.Min(currentPage + 1,
-            Mathf.CeilToInt((float)suitsLength / suitsPerPage) - 1);
+        if (!LocalPlayer.isActive()) return;
+        
+        currentPage = Mathf.Min(currentPage + 1, Mathf.CeilToInt((float)suitsLength / suitsPerPage) - 1);
+        SetPageText();
     }
 
     private void MoveLeftAction(InputAction.CallbackContext obj)
     {
+        if (!LocalPlayer.isActive()) return;
+        
         currentPage = Mathf.Max(currentPage - 1, 0);
+        SetPageText();
+    }
+
+    private void SetPageText()
+    {
+        var textMesh = Hooks.SuitPanel.GetComponentInChildren<TextMeshProUGUI>();
+        textMesh.text = $"Page {currentPage + 1}/{Mathf.CeilToInt((float)suitsLength / suitsPerPage)}";
     }
 
     private class Hooks
@@ -180,9 +193,8 @@ public class PluginLoader : MonoBehaviour
         public static void HookStartGame()
         {
             Plugin.LogSource.LogInfo("StartOfRound!");
-
-            Instantiate(suitSelectBundle.LoadAsset<GameObject>("SuitSelect"));
-            SuitPanel = GameObject.Find("SuitPanel");
+            allSuits = Resources.FindObjectsOfTypeAll<UnlockableSuit>().OrderBy(suit => suit.syncedSuitID.Value).ToArray();
+            SuitPanel = Instantiate(suitSelectBundle.LoadAsset<GameObject>("SuitSelect"));
             SuitPanel.SetActive(false);
             SetUI = true;
         }
