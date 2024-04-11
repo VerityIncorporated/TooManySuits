@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Numerics;
+using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -8,10 +9,12 @@ using TMPro;
 using TooManySuits.Helper;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Quaternion = UnityEngine.Quaternion;
+using Vector3 = UnityEngine.Vector3;
 
 namespace TooManySuits;
 
-[BepInPlugin("verity.TooManySuits", "Too Many Suits", "1.0.7")]
+[BepInPlugin("verity.TooManySuits", "Too Many Suits", "1.0.8")]
 [BepInDependency("x753.More_Suits")]
 public class Plugin : BaseUnityPlugin
 {
@@ -19,6 +22,7 @@ public class Plugin : BaseUnityPlugin
 
     public static ConfigEntry<string> NextButton = null!;
     public static ConfigEntry<string> BackButton = null!;
+    public static ConfigEntry<string> RefreshButton = null!;
     
     public static ConfigEntry<float> TextScale = null!;
     
@@ -28,6 +32,7 @@ public class Plugin : BaseUnityPlugin
         
         NextButton = Config.Bind("General", "Next-Page-Keybind", "<Keyboard>/n", "Next page button.");
         BackButton = Config.Bind("General", "Back-Page-Keybind", "<Keyboard>/b", "Back page button.");
+        RefreshButton = Config.Bind("General", "Refresh-SuitRack-Keybind", "<Keyboard>/k", "Refreshes the suit rack, this can fix issues where purchased suits do not appear on the rack.");
 
         TextScale = Config.Bind("General", "Text-Scale", 0.005f, "Size of the text above the suit rack.");
         
@@ -40,47 +45,52 @@ public class Plugin : BaseUnityPlugin
 
 public class PluginLoader : MonoBehaviour
 {
-    private readonly Harmony Harmony = new("TooManySuits");
+    private readonly Harmony _harmony = new("TooManySuits");
 
-    private InputAction moveRightAction = null!;
-    private InputAction moveLeftAction = null!;
+    private InputAction _moveRightAction = null!;
+    private InputAction _moveLeftAction = null!;
+    private InputAction _refreshSuitRackAction = null!;
 
-    private int currentPage;
-    private int suitsPerPage = 13;
+    private int _currentPage;
+    private int _suitsPerPage = 13;
 
 
-    private int suitsLength;
-    private static UnlockableSuit[] allSuits = null!;
+    private int _suitsLength;
+    private static UnlockableSuit[] _allSuits = null!;
 
-    private static AssetBundle suitSelectBundle = null!;
+    private static AssetBundle _suitSelectBundle = null!;
 
     private void Awake()
     {
         Plugin.LogSource.LogInfo("TooManySuits Mod Loaded.");
 
-        moveRightAction = new InputAction(binding: Plugin.NextButton.Value);
-        moveRightAction.performed += MoveRightAction;
-        moveRightAction.Enable();
+        _moveRightAction = new InputAction(binding: Plugin.NextButton.Value);
+        _moveRightAction.performed += MoveRightAction;
+        _moveRightAction.Enable();
 
-        moveLeftAction = new InputAction(binding: Plugin.BackButton.Value);
-        moveLeftAction.performed += MoveLeftAction;
-        moveLeftAction.Enable();
+        _moveLeftAction = new InputAction(binding: Plugin.BackButton.Value);
+        _moveLeftAction.performed += MoveLeftAction;
+        _moveLeftAction.Enable();
+
+        _refreshSuitRackAction = new InputAction(binding: Plugin.RefreshButton.Value);
+        _refreshSuitRackAction.performed += RefreshSuitRack;
+        _refreshSuitRackAction.Enable();
 
         var playerInputOriginal =
             typeof(StartOfRound).GetMethod("Start", BindingFlags.Instance | BindingFlags.NonPublic);
         var playerInputPostfix = typeof(Hooks).GetMethod(nameof(Hooks.HookStartGame));
-        Harmony.Patch(playerInputOriginal, postfix: new HarmonyMethod(playerInputPostfix));
+        _harmony.Patch(playerInputOriginal, postfix: new HarmonyMethod(playerInputPostfix));
 
         var awakeOriginal =
             typeof(PlayerControllerB).GetMethod("Start", BindingFlags.Instance | BindingFlags.NonPublic);
         var awakePost = typeof(LocalPlayer).GetMethod(nameof(LocalPlayer.PlayerControllerStart));
-        Harmony.Patch(awakeOriginal, postfix: new HarmonyMethod(awakePost));
+        _harmony.Patch(awakeOriginal, postfix: new HarmonyMethod(awakePost));
 
-        suitSelectBundle = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "suitselect"));
+        _suitSelectBundle = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "suitselect"));
 
         if (MoreSuits.MoreSuitsMod.MakeSuitsFitOnRack)
         {
-            suitsPerPage = 20;
+            _suitsPerPage = 20;
         }
     }
 
@@ -99,15 +109,15 @@ public class PluginLoader : MonoBehaviour
 
     private void DisplaySuits()
     {
-        if (allSuits.Length <= 0) return;
+        if (_allSuits.Length <= 0) return;
 
-        var startIndex = currentPage * suitsPerPage;
-        var endIndex = Mathf.Min(startIndex + suitsPerPage, allSuits.Length);
+        var startIndex = _currentPage * _suitsPerPage;
+        var endIndex = Mathf.Min(startIndex + _suitsPerPage, _allSuits.Length);
 
         var num = 0;
-        for (var i = 0; i < allSuits.Length; i++)
+        for (var i = 0; i < _allSuits.Length; i++)
         {
-            var unlockableSuit = allSuits[i];
+            var unlockableSuit = _allSuits[i];
             var autoParent = unlockableSuit.gameObject.GetComponent<AutoParentToShip>();
             if (autoParent == null) continue;
 
@@ -118,10 +128,10 @@ public class PluginLoader : MonoBehaviour
             if (!shouldShow) continue;
 
             autoParent.overrideOffset = true;
-            if (MoreSuits.MoreSuitsMod.MakeSuitsFitOnRack && suitsLength > 13)
+            if (MoreSuits.MoreSuitsMod.MakeSuitsFitOnRack && _suitsLength > 13)
             {
                 var offsetModifier = 0.18f;
-                offsetModifier /= Math.Min(suitsLength, 20) / 12f;
+                offsetModifier /= Math.Min(_suitsLength, 20) / 12f;
                 
                 autoParent.positionOffset = new Vector3(-2.45f, 2.75f, -8.41f) + StartOfRound.Instance.rightmostSuitPosition.forward * (offsetModifier * num);
                 autoParent.rotationOffset = new Vector3(0f, 90f, 0f);  
@@ -135,7 +145,7 @@ public class PluginLoader : MonoBehaviour
             num++;
         }
 
-        suitsLength = allSuits.Length;
+        _suitsLength = _allSuits.Length;
 
         if (LocalPlayer.localPlayer.isInHangarShipRoom)
         {
@@ -149,13 +159,15 @@ public class PluginLoader : MonoBehaviour
 
         Hooks.SetUI = false;
 
-        Hooks.SuitPanel.GetComponentInChildren<Canvas>().renderMode = RenderMode.WorldSpace;
-        Hooks.SuitPanel.GetComponentInChildren<Canvas>().worldCamera = LocalPlayer.localPlayer.gameplayCamera;
+        var panelCanvas = Hooks.SuitPanel.GetComponentInChildren<Canvas>();
+        
+        panelCanvas.renderMode = RenderMode.WorldSpace;
+        panelCanvas.worldCamera = LocalPlayer.localPlayer.gameplayCamera;
 
-        Hooks.SuitPanel.GetComponentInChildren<Canvas>().transform.position =
+        panelCanvas.transform.position =
             StartOfRound.Instance.shipBounds.bounds.center - new Vector3(2.8992f, 0.7998f, 2f);
-        Hooks.SuitPanel.GetComponentInChildren<Canvas>().transform.rotation = Quaternion.Euler(0, 180, 0);
-        Hooks.SuitPanel.GetComponentInChildren<Canvas>().transform.localScale =
+        panelCanvas.transform.rotation = Quaternion.Euler(0, 180, 0);
+        panelCanvas.transform.localScale =
             new Vector3(Plugin.TextScale.Value, Plugin.TextScale.Value, Plugin.TextScale.Value);
 
         SetPageText();
@@ -167,7 +179,7 @@ public class PluginLoader : MonoBehaviour
     {
         if (!LocalPlayer.isActive()) return;
         
-        currentPage = Mathf.Min(currentPage + 1, Mathf.CeilToInt((float)suitsLength / suitsPerPage) - 1);
+        _currentPage = Mathf.Min(_currentPage + 1, Mathf.CeilToInt((float)_suitsLength / _suitsPerPage) - 1);
         SetPageText();
     }
 
@@ -175,14 +187,20 @@ public class PluginLoader : MonoBehaviour
     {
         if (!LocalPlayer.isActive()) return;
         
-        currentPage = Mathf.Max(currentPage - 1, 0);
+        _currentPage = Mathf.Max(_currentPage - 1, 0);
         SetPageText();
     }
 
     private void SetPageText()
     {
         var textMesh = Hooks.SuitPanel.GetComponentInChildren<TextMeshProUGUI>();
-        textMesh.text = $"Page {currentPage + 1}/{Mathf.CeilToInt((float)suitsLength / suitsPerPage)}";
+        textMesh.text = $"Page {_currentPage + 1}/{Mathf.CeilToInt((float)_suitsLength / _suitsPerPage)}";
+    }
+
+    private void RefreshSuitRack(InputAction.CallbackContext obj)
+    {
+        if (!LocalPlayer.isActive()) return;
+        _allSuits = Resources.FindObjectsOfTypeAll<UnlockableSuit>().OrderBy(suit => suit.syncedSuitID.Value).ToArray();
     }
 
     private class Hooks
@@ -193,8 +211,8 @@ public class PluginLoader : MonoBehaviour
         public static void HookStartGame()
         {
             Plugin.LogSource.LogInfo("StartOfRound!");
-            allSuits = Resources.FindObjectsOfTypeAll<UnlockableSuit>().OrderBy(suit => suit.syncedSuitID.Value).ToArray();
-            SuitPanel = Instantiate(suitSelectBundle.LoadAsset<GameObject>("SuitSelect"));
+            _allSuits = Resources.FindObjectsOfTypeAll<UnlockableSuit>().OrderBy(suit => suit.syncedSuitID.Value).ToArray();
+            SuitPanel = Instantiate(_suitSelectBundle.LoadAsset<GameObject>("SuitSelect"));
             SuitPanel.SetActive(false);
             SetUI = true;
         }
