@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using System.Reflection;
+﻿using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -14,7 +13,7 @@ using Vector3 = UnityEngine.Vector3;
 
 namespace TooManySuits;
 
-[BepInPlugin("verity.TooManySuits", "Too Many Suits", "1.0.8")]
+[BepInPlugin("verity.TooManySuits", "Too Many Suits", "1.0.9")]
 [BepInDependency("x753.More_Suits")]
 public class Plugin : BaseUnityPlugin
 {
@@ -51,7 +50,7 @@ public class PluginLoader : MonoBehaviour
     private InputAction _moveLeftAction = null!;
     private InputAction _refreshSuitRackAction = null!;
 
-    private int _currentPage;
+    private static int _currentPage;
     private int _suitsPerPage = 13;
 
 
@@ -215,6 +214,8 @@ public class PluginLoader : MonoBehaviour
             SuitPanel = Instantiate(_suitSelectBundle.LoadAsset<GameObject>("SuitSelect"));
             SuitPanel.SetActive(false);
             SetUI = true;
+
+            _currentPage = 0;
         }
     }
 }
