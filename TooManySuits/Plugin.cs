@@ -117,7 +117,7 @@ public class PluginLoader : MonoBehaviour
         var suitsPerPage = _suitsPerPage;
         if (_currentPage == 0)
         {
-            suitsPerPage += 1;
+            suitsPerPage += 1; // Not sure if this works as a fix to the missing suit on page 1
         }
 
         var startIndex = _currentPage * suitsPerPage;
