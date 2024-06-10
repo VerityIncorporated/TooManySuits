@@ -24,6 +24,8 @@ public class Plugin : BaseUnityPlugin
     public static ConfigEntry<string> RefreshButton = null!;
     
     public static ConfigEntry<float> TextScale = null!;
+
+    public static ConfigEntry<int> SuitsPerPage = null!;
     
     private void Awake()
     {
@@ -35,6 +37,8 @@ public class Plugin : BaseUnityPlugin
 
         TextScale = Config.Bind("General", "Text-Scale", 0.005f, "Size of the text above the suit rack.");
         
+        SuitsPerPage = Config.Bind("General", "Suits Per Page", 20, "Number of suits to be displayed per page.");        
+
         var pluginLoader = new GameObject("TooManySuits");
         pluginLoader.AddComponent<PluginLoader>();
         pluginLoader.hideFlags = HideFlags.HideAndDontSave;
@@ -89,7 +93,7 @@ public class PluginLoader : MonoBehaviour
 
         if (MoreSuits.MoreSuitsMod.MakeSuitsFitOnRack)
         {
-            _suitsPerPage = 20;
+            _suitsPerPage = Plugin.SuitsPerPage.Value;
         }
     }
 
@@ -111,6 +115,10 @@ public class PluginLoader : MonoBehaviour
         if (_allSuits.Length <= 0) return;
 
         var startIndex = _currentPage * _suitsPerPage;
+        if (_currentPage == 0)
+        {
+            _suitsPerPage += 1;
+        }
         var endIndex = Mathf.Min(startIndex + _suitsPerPage, _allSuits.Length);
 
         var num = 0;
@@ -130,7 +138,7 @@ public class PluginLoader : MonoBehaviour
             if (MoreSuits.MoreSuitsMod.MakeSuitsFitOnRack && _suitsLength > 13)
             {
                 var offsetModifier = 0.18f;
-                offsetModifier /= Math.Min(_suitsLength, 20) / 12f;
+                offsetModifier /= Math.Min(_suitsLength, Plugin.SuitsPerPage.Value) / 12f;
                 
                 autoParent.positionOffset = new Vector3(-2.45f, 2.75f, -8.41f) + StartOfRound.Instance.rightmostSuitPosition.forward * (offsetModifier * num);
                 autoParent.rotationOffset = new Vector3(0f, 90f, 0f);  
