@@ -114,12 +114,14 @@ public class PluginLoader : MonoBehaviour
     {
         if (_allSuits.Length <= 0) return;
 
-        var startIndex = _currentPage * _suitsPerPage;
+        var suitsPerPage = _suitsPerPage;
         if (_currentPage == 0)
         {
-            _suitsPerPage += 1;
+            suitsPerPage += 1;
         }
-        var endIndex = Mathf.Min(startIndex + _suitsPerPage, _allSuits.Length);
+
+        var startIndex = _currentPage * suitsPerPage;
+        var endIndex = Mathf.Min(startIndex + suitsPerPage, _allSuits.Length);
 
         var num = 0;
         for (var i = 0; i < _allSuits.Length; i++)
