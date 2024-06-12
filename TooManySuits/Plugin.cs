@@ -2,220 +2,99 @@
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using GameNetcodeStuff;
 using HarmonyLib;
-using TMPro;
-using TooManySuits.Helper;
+using TooManySuits.Suits;
+using TooManySuits.UI;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using Quaternion = UnityEngine.Quaternion;
-using Vector3 = UnityEngine.Vector3;
+using static BepInEx.Logging.Logger;
 
 namespace TooManySuits;
 
-[BepInPlugin("verity.TooManySuits", "Too Many Suits", "1.0.9")]
+[BepInPlugin("verity.TooManySuits", "Too Many Suits", "1.1.0")]
 [BepInDependency("x753.More_Suits")]
 public class Plugin : BaseUnityPlugin
 {
-    public static ManualLogSource LogSource = null!;
-
-    public static ConfigEntry<string> NextButton = null!;
-    public static ConfigEntry<string> BackButton = null!;
-    public static ConfigEntry<string> RefreshButton = null!;
+    public static ConfigEntry<string> NextPage = null!;
+    public static ConfigEntry<string> PreviousPage = null!;
+    public static ConfigEntry<int> SuitsPerPage = null!;
     
     public static ConfigEntry<float> TextScale = null!;
     
     private void Awake()
     {
-        LogSource = Logger;
+        NextPage = Config.Bind("Pagination", "Next Page Keybinding", "<keyboard>/n", "Button which changes to the next page.");
+        PreviousPage = Config.Bind("Pagination", "Previous Page Keybinding", "<keyboard>/b", "Button which changes to the previous page.");
+        SuitsPerPage = Config.Bind("Pagination", "Items Per Page", 20, "Number of suits per page in the suit rack. Anything over 20 will cause clipping issues.");
         
-        NextButton = Config.Bind("General", "Next-Page-Keybind", "<Keyboard>/n", "Next page button.");
-        BackButton = Config.Bind("General", "Back-Page-Keybind", "<Keyboard>/b", "Back page button.");
-        RefreshButton = Config.Bind("General", "Refresh-SuitRack-Keybind", "<Keyboard>/k", "Refreshes the suit rack, this can fix issues where purchased suits do not appear on the rack.");
-
-        TextScale = Config.Bind("General", "Text-Scale", 0.005f, "Size of the text above the suit rack.");
+        TextScale = Config.Bind("UI", "Text Scale", 0.005f, "Size of the text above the suit rack.");
         
-        var pluginLoader = new GameObject("TooManySuits");
-        pluginLoader.AddComponent<PluginLoader>();
-        pluginLoader.hideFlags = HideFlags.HideAndDontSave;
-        DontDestroyOnLoad(pluginLoader);
+        var pluginGameObject = new GameObject("TooManySuits");
+        pluginGameObject.AddComponent<TooManySuits>();
+        pluginGameObject.hideFlags = HideFlags.HideAndDontSave;
+        DontDestroyOnLoad(pluginGameObject);
     }
 }
 
-public class PluginLoader : MonoBehaviour
+public class TooManySuits : MonoBehaviour
 {
-    private readonly Harmony _harmony = new("TooManySuits");
+    public static TooManySuits Instance = null!;
+    
+    public static readonly ManualLogSource GlobalLogSource = new("TooManySuits");
+    private static readonly Harmony Harmony = new("TooManySuits");
 
-    private InputAction _moveRightAction = null!;
-    private InputAction _moveLeftAction = null!;
-    private InputAction _refreshSuitRackAction = null!;
+    private PaginationController _paginationController = null!;
+    public SuitManager suitManager = null!;
 
-    private static int _currentPage;
-    private int _suitsPerPage = 13;
-
-
-    private int _suitsLength;
-    private static UnlockableSuit[] _allSuits = null!;
-
-    private static AssetBundle _suitSelectBundle = null!;
-
-    private void Awake()
+    public static GameObject SuitRackPrefab = null!;
+    
+    public void Awake()
     {
-        Plugin.LogSource.LogInfo("TooManySuits Mod Loaded.");
-
-        _moveRightAction = new InputAction(binding: Plugin.NextButton.Value);
-        _moveRightAction.performed += MoveRightAction;
-        _moveRightAction.Enable();
-
-        _moveLeftAction = new InputAction(binding: Plugin.BackButton.Value);
-        _moveLeftAction.performed += MoveLeftAction;
-        _moveLeftAction.Enable();
-
-        _refreshSuitRackAction = new InputAction(binding: Plugin.RefreshButton.Value);
-        _refreshSuitRackAction.performed += RefreshSuitRack;
-        _refreshSuitRackAction.Enable();
-
-        var playerInputOriginal =
-            typeof(StartOfRound).GetMethod("Start", BindingFlags.Instance | BindingFlags.NonPublic);
-        var playerInputPostfix = typeof(Hooks).GetMethod(nameof(Hooks.HookStartGame));
-        _harmony.Patch(playerInputOriginal, postfix: new HarmonyMethod(playerInputPostfix));
-
-        var awakeOriginal =
-            typeof(PlayerControllerB).GetMethod("Start", BindingFlags.Instance | BindingFlags.NonPublic);
-        var awakePost = typeof(LocalPlayer).GetMethod(nameof(LocalPlayer.PlayerControllerStart));
-        _harmony.Patch(awakeOriginal, postfix: new HarmonyMethod(awakePost));
-
-        _suitSelectBundle = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "suitselect"));
-
-        if (MoreSuits.MoreSuitsMod.MakeSuitsFitOnRack)
-        {
-            _suitsPerPage = 20;
-        }
+        Instance = this;
+        
+        Sources.Add(GlobalLogSource);
     }
 
-    private void Update()
+    private void Start()
     {
-        if (StartOfRound.Instance == null) return;
-        try
-        {
-            DisplaySuits();
-        }
-        catch
-        {
-            //Cba to fix null reference exception
-        }
+        LoadAssetBundle();
+        
+        Harmony.PatchAll();
+        
+        suitManager = gameObject.AddComponent<SuitManager>();
+        DontDestroyOnLoad(suitManager);
+        
+        _paginationController = new PaginationController();
+        _paginationController.Initialize(Plugin.SuitsPerPage.Value);
     }
 
-    private void DisplaySuits()
+    private void LoadAssetBundle()
     {
-        if (_allSuits.Length <= 0) return;
-
-        var startIndex = _currentPage * _suitsPerPage;
-        var endIndex = Mathf.Min(startIndex + _suitsPerPage, _allSuits.Length);
-
-        var num = 0;
-        for (var i = 0; i < _allSuits.Length; i++)
+        const string assetBundleName = "TooManySuits.SuitSelect";
+        var assetBundle = LoadAssetBundleFromResources(assetBundleName);
+        if (assetBundle == null)
         {
-            var unlockableSuit = _allSuits[i];
-            var autoParent = unlockableSuit.gameObject.GetComponent<AutoParentToShip>();
-            if (autoParent == null) continue;
-
-            var shouldShow = i >= startIndex && i < endIndex;
-
-            unlockableSuit.gameObject.SetActive(shouldShow);
-
-            if (!shouldShow) continue;
-
-            autoParent.overrideOffset = true;
-            if (MoreSuits.MoreSuitsMod.MakeSuitsFitOnRack && _suitsLength > 13)
-            {
-                var offsetModifier = 0.18f;
-                offsetModifier /= Math.Min(_suitsLength, 20) / 12f;
-                
-                autoParent.positionOffset = new Vector3(-2.45f, 2.75f, -8.41f) + StartOfRound.Instance.rightmostSuitPosition.forward * (offsetModifier * num);
-                autoParent.rotationOffset = new Vector3(0f, 90f, 0f);  
-            }
-            else
-            {
-                autoParent.positionOffset = new Vector3(-2.45f, 2.75f, -8.41f) + StartOfRound.Instance.rightmostSuitPosition.forward * (0.18f * num);
-                autoParent.rotationOffset = new Vector3(0f, 90f, 0f);
-            }
-
-            num++;
+            GlobalLogSource.LogError("Failed to load Asset Bundle!");
+            return;
         }
-
-        _suitsLength = _allSuits.Length;
-
-        if (LocalPlayer.localPlayer.isInHangarShipRoom)
+        
+        var prefab = assetBundle.LoadAsset<GameObject>("SuitSelect");
+        if (prefab == null)
         {
-            Hooks.SuitPanel.SetActive(true);
+            GlobalLogSource.LogError("Failed to load Suit Rack Prefab from Asset Bundle!");
             return;
         }
 
-        Hooks.SuitPanel.SetActive(false);
-
-        if (!Hooks.SetUI) return;
-
-        Hooks.SetUI = false;
-
-        var panelCanvas = Hooks.SuitPanel.GetComponentInChildren<Canvas>();
+        SuitRackPrefab = Instantiate(prefab);
+        SuitRackPrefab.SetActive(false);
         
-        panelCanvas.renderMode = RenderMode.WorldSpace;
-        panelCanvas.worldCamera = LocalPlayer.localPlayer.gameplayCamera;
-
-        panelCanvas.transform.position =
-            StartOfRound.Instance.shipBounds.bounds.center - new Vector3(2.8992f, 0.7998f, 2f);
-        panelCanvas.transform.rotation = Quaternion.Euler(0, 180, 0);
-        panelCanvas.transform.localScale =
-            new Vector3(Plugin.TextScale.Value, Plugin.TextScale.Value, Plugin.TextScale.Value);
-
-        SetPageText();
-        
-        Hooks.SuitPanel.SetActive(true);
+        SuitRackPrefab.hideFlags = HideFlags.HideAndDontSave;
+        DontDestroyOnLoad(SuitRackPrefab);
     }
-
-    private void MoveRightAction(InputAction.CallbackContext obj)
+    
+    private static AssetBundle LoadAssetBundleFromResources(string resourceName)
     {
-        if (!LocalPlayer.isActive()) return;
-        
-        _currentPage = Mathf.Min(_currentPage + 1, Mathf.CeilToInt((float)_suitsLength / _suitsPerPage) - 1);
-        SetPageText();
-    }
-
-    private void MoveLeftAction(InputAction.CallbackContext obj)
-    {
-        if (!LocalPlayer.isActive()) return;
-        
-        _currentPage = Mathf.Max(_currentPage - 1, 0);
-        SetPageText();
-    }
-
-    private void SetPageText()
-    {
-        var textMesh = Hooks.SuitPanel.GetComponentInChildren<TextMeshProUGUI>();
-        textMesh.text = $"Page {_currentPage + 1}/{Mathf.CeilToInt((float)_suitsLength / _suitsPerPage)}";
-    }
-
-    private void RefreshSuitRack(InputAction.CallbackContext obj)
-    {
-        if (!LocalPlayer.isActive()) return;
-        _allSuits = Resources.FindObjectsOfTypeAll<UnlockableSuit>().OrderBy(suit => suit.syncedSuitID.Value).ToArray();
-    }
-
-    private class Hooks
-    {
-        public static bool SetUI;
-        public static GameObject SuitPanel = null!;
-
-        public static void HookStartGame()
-        {
-            Plugin.LogSource.LogInfo("StartOfRound!");
-            _allSuits = Resources.FindObjectsOfTypeAll<UnlockableSuit>().OrderBy(suit => suit.syncedSuitID.Value).ToArray();
-            SuitPanel = Instantiate(_suitSelectBundle.LoadAsset<GameObject>("SuitSelect"));
-            SuitPanel.SetActive(false);
-            SetUI = true;
-
-            _currentPage = 0;
-        }
+        var assembly = Assembly.GetExecutingAssembly();
+        using var stream = assembly.GetManifestResourceStream(resourceName)!;
+        return AssetBundle.LoadFromStream(stream);
     }
 }

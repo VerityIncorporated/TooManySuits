@@ -1,0 +1,12 @@
+C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\bin\Debug\net8.0\TooManySuits.deps.json
+C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\bin\Debug\net8.0\TooManySuits.dll
+C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\bin\Debug\net8.0\TooManySuits.pdb
+C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\obj\Debug\net8.0\TooManySuits.csproj.AssemblyReference.cache
+C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\obj\Debug\net8.0\TooManySuits.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\obj\Debug\net8.0\TooManySuits.AssemblyInfoInputs.cache
+C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\obj\Debug\net8.0\TooManySuits.AssemblyInfo.cs
+C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\obj\Debug\net8.0\TooManySuits.csproj.CoreCompileInputs.cache
+C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\obj\Debug\net8.0\TooManySuits.dll
+C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\obj\Debug\net8.0\refint\TooManySuits.dll
+C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\obj\Debug\net8.0\TooManySuits.pdb
+C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\obj\Debug\net8.0\ref\TooManySuits.dll
