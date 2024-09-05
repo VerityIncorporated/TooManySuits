@@ -83,7 +83,17 @@ public class PaginationController
 
             var shouldShow = i >= startIndex && i < endIndex;
 
-            unlockableSuit.gameObject.SetActive(shouldShow);
+            // NOTE: we can't just disable the GameObject, or the initialization logic
+            // in the UnlockableSuit component won't get executed, resulting in desync.
+            foreach (var renderer in unlockableSuit.gameObject.GetComponentsInChildren<Renderer>()) {
+              renderer.enabled = shouldShow;
+            }
+            foreach (var collider in unlockableSuit.gameObject.GetComponentsInChildren<Collider>()) {
+              collider.enabled = shouldShow;
+            }
+            var interactTrigger = unlockableSuit.gameObject.GetComponent<InteractTrigger>();
+            interactTrigger.enabled = shouldShow;
+            interactTrigger.interactable = shouldShow;
 
             if (!shouldShow) continue;
 
