@@ -1,3 +1,10 @@
+- 1.1.1
+  - Fixed a bug where equipping a suit wouldn't get networked if other players hadn't visited all pages prior to equipping.
+  - Fixed a bug where the text above the rack would appear at the landing location before the ship finished landing.
+  - Fixed a bug where the text above the rack would stay at the landing location after taking off.
+  - Removed assembly reference on MoreSuits (now accessed via reflection).
+  - Added support for LobbyCompatibility
+
 - 1.1.0
   - Complete recoding and reorganization of the mod, making it easier to read from a developer's standpoint and more efficient and of higher quality for the user.
   - You no longer need the suitselect asset bundle as its now an embedded resource in the dll.
