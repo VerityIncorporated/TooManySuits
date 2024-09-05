@@ -3,6 +3,8 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using LobbyCompatibility.Attributes;
+using LobbyCompatibility.Enums;
 using TooManySuits.Suits;
 using TooManySuits.UI;
 using UnityEngine;
@@ -12,6 +14,7 @@ namespace TooManySuits;
 
 [BepInPlugin("verity.TooManySuits", "Too Many Suits", "1.1.0")]
 [BepInDependency(MoreSuitsGuid, BepInDependency.DependencyFlags.HardDependency)]
+[LobbyCompatibility(CompatibilityLevel.ClientOnly, VersionStrictness.None)]
 public class Plugin : BaseUnityPlugin
 {
     internal const string MoreSuitsGuid = "x753.More_Suits";
