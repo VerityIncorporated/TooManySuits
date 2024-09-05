@@ -86,6 +86,7 @@ public class TooManySuits : MonoBehaviour
 
         SuitRackPrefab = Instantiate(prefab);
         SuitRackPrefab.SetActive(false);
+        SuitRackPrefab.AddComponent<AutoParentToShip>();
         
         SuitRackPrefab.hideFlags = HideFlags.HideAndDontSave;
         DontDestroyOnLoad(SuitRackPrefab);
