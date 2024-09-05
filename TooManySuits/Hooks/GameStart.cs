@@ -32,7 +32,7 @@ public class GameStart
         if (suitRackPrefab != null)
         {
             suitRackPrefab.SetActive(true);
-                
+
             var panelCanvas = suitRackPrefab.GetComponentInChildren<Canvas>();
 
             panelCanvas.renderMode = RenderMode.WorldSpace;

@@ -8,21 +8,21 @@ namespace TooManySuits.UI;
 public class PaginationController
 {
     private int CurrentPage { get; set; }
-    
+
     private int _suitsPerPage;
     private int _totalPages;
-    
+
     private List<UnlockableSuit> _allSuits = null!;
-    
+
     private InputAction _nextPageAction = null!;
     private InputAction _previousPageAction = null!;
 
     public void Initialize(int suitsPerPage)
     {
         _suitsPerPage = suitsPerPage;
-        
+
         CurrentPage = 0;
-        
+
         _nextPageAction = new InputAction(binding: Plugin.NextPage.Value);
         _previousPageAction = new InputAction(binding: Plugin.PreviousPage.Value);
 
@@ -40,14 +40,14 @@ public class PaginationController
         _allSuits = [..SuitManager.Instance.AllSuits];
         _totalPages = Mathf.CeilToInt(_allSuits.Count / (float)_suitsPerPage);
         DisplayCurrentPage();
-        
+
         CurrentPage = 0;
     }
 
     private void NextPage()
     {
         if (CurrentPage >= _totalPages - 1) return;
-        
+
         CurrentPage++;
         DisplayCurrentPage();
     }
@@ -55,11 +55,11 @@ public class PaginationController
     private void PreviousPage()
     {
         if (CurrentPage <= 0) return;
-        
+
         CurrentPage--;
         DisplayCurrentPage();
     }
-    
+
     private void SetPageText()
     {
         var textMesh = TooManySuits.SuitRackPrefab.GetComponentInChildren<TextMeshProUGUI>();
@@ -68,7 +68,7 @@ public class PaginationController
             textMesh.text = $"Page {CurrentPage + 1}/{_totalPages}";
         }
     }
-    
+
     private void DisplayCurrentPage()
     {
         var startIndex = CurrentPage * _suitsPerPage;

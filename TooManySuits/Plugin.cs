@@ -21,15 +21,15 @@ public class Plugin : BaseUnityPlugin
     public static ConfigEntry<string> NextPage = null!;
     public static ConfigEntry<string> PreviousPage = null!;
     public static ConfigEntry<int> SuitsPerPage = null!;
-    
+
     public static ConfigEntry<float> TextScale = null!;
-    
+
     private void Awake()
     {
         NextPage = Config.Bind("Pagination", "Next Page Keybinding", "<keyboard>/n", "Button which changes to the next page.");
         PreviousPage = Config.Bind("Pagination", "Previous Page Keybinding", "<keyboard>/b", "Button which changes to the previous page.");
         SuitsPerPage = Config.Bind("Pagination", "Items Per Page", 20, "Number of suits per page in the suit rack. Anything over 20 will cause clipping issues.");
-        
+
         TextScale = Config.Bind("UI", "Text Scale", 0.005f, "Size of the text above the suit rack.");
 
         MoreSuitsInterop = new MoreSuitsInterop();
@@ -44,7 +44,7 @@ public class Plugin : BaseUnityPlugin
 public class TooManySuits : MonoBehaviour
 {
     public static TooManySuits Instance = null!;
-    
+
     public static readonly ManualLogSource GlobalLogSource = new("TooManySuits");
     private static readonly Harmony Harmony = new("TooManySuits");
 
@@ -52,23 +52,23 @@ public class TooManySuits : MonoBehaviour
     public SuitManager suitManager = null!;
 
     public static GameObject SuitRackPrefab = null!;
-    
+
     public void Awake()
     {
         Instance = this;
-        
+
         Sources.Add(GlobalLogSource);
     }
 
     private void Start()
     {
         LoadAssetBundle();
-        
+
         Harmony.PatchAll();
-        
+
         suitManager = gameObject.AddComponent<SuitManager>();
         DontDestroyOnLoad(suitManager);
-        
+
         _paginationController = new PaginationController();
         _paginationController.Initialize(Plugin.SuitsPerPage.Value);
     }
@@ -82,7 +82,7 @@ public class TooManySuits : MonoBehaviour
             GlobalLogSource.LogError("Failed to load Asset Bundle!");
             return;
         }
-        
+
         var prefab = assetBundle.LoadAsset<GameObject>("SuitSelect");
         if (prefab == null)
         {
@@ -93,11 +93,11 @@ public class TooManySuits : MonoBehaviour
         SuitRackPrefab = Instantiate(prefab);
         SuitRackPrefab.SetActive(false);
         SuitRackPrefab.AddComponent<AutoParentToShip>();
-        
+
         SuitRackPrefab.hideFlags = HideFlags.HideAndDontSave;
         DontDestroyOnLoad(SuitRackPrefab);
     }
-    
+
     private static AssetBundle LoadAssetBundleFromResources(string resourceName)
     {
         var assembly = Assembly.GetExecutingAssembly();
