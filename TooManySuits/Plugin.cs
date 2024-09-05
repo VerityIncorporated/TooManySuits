@@ -11,9 +11,13 @@ using static BepInEx.Logging.Logger;
 namespace TooManySuits;
 
 [BepInPlugin("verity.TooManySuits", "Too Many Suits", "1.1.0")]
-[BepInDependency("x753.More_Suits")]
+[BepInDependency(MoreSuitsGuid, BepInDependency.DependencyFlags.HardDependency)]
 public class Plugin : BaseUnityPlugin
 {
+    internal const string MoreSuitsGuid = "x753.More_Suits";
+
+    internal static MoreSuitsInterop MoreSuitsInterop { get; private set; } = null!;
+
     public static ConfigEntry<string> NextPage = null!;
     public static ConfigEntry<string> PreviousPage = null!;
     public static ConfigEntry<int> SuitsPerPage = null!;
@@ -27,7 +31,9 @@ public class Plugin : BaseUnityPlugin
         SuitsPerPage = Config.Bind("Pagination", "Items Per Page", 20, "Number of suits per page in the suit rack. Anything over 20 will cause clipping issues.");
         
         TextScale = Config.Bind("UI", "Text Scale", 0.005f, "Size of the text above the suit rack.");
-        
+
+        MoreSuitsInterop = new MoreSuitsInterop();
+
         var pluginGameObject = new GameObject("TooManySuits");
         pluginGameObject.AddComponent<TooManySuits>();
         pluginGameObject.hideFlags = HideFlags.HideAndDontSave;

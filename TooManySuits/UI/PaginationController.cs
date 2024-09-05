@@ -98,7 +98,7 @@ public class PaginationController
             if (!shouldShow) continue;
 
             autoParent.overrideOffset = true;
-            if (MoreSuits.MoreSuitsMod.MakeSuitsFitOnRack && _allSuits.Count > 13)
+            if (Plugin.MoreSuitsInterop.MakeSuitsFitOnRack && _allSuits.Count > 13)
             {
                 var offsetModifier = 0.18f;
                 offsetModifier /= Mathf.Min(_allSuits.Count, 20) / 12f;
