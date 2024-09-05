@@ -1,0 +1,10 @@
+{
+    "name": "TooManySuits",
+    "version_number": "1.1.0",
+    "website_url": "",
+    "description": "More Suits Addon which adds pages to the suit rack.",
+    "dependencies": [
+        "BepInEx-BepInExPack-5.4.2100",
+        "x753-More_Suits-1.4.3"
+    ]
+}

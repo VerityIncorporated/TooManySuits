@@ -41,4 +41,22 @@
   <ItemGroup>
     <EmbeddedResource Include="SuitSelect" />
   </ItemGroup>
+
+  <Target Name="ZipMod" AfterTargets="PostBuildEvent" Condition="$(Configuration) == 'Release'">
+    <RemoveDir Directories="$(OutputPath)/package" />
+    <ItemGroup>
+      <PackageFiles Include="$(MSBuildProjectDirectory)/../LICENSE" />
+      <PackageFiles Include="$(MSBuildProjectDirectory)/../README.md" />
+      <PackageFiles Include="$(MSBuildProjectDirectory)/../CHANGELOG.md" />
+      <PackageFiles Include="$(MSBuildProjectDirectory)/../Thunderstore/manifest.json" />
+      <PackageFiles Include="$(MSBuildProjectDirectory)/../Thunderstore/icon.png" />
+      <PackageFiles Include="$(TargetPath)" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PackageFiles)" DestinationFolder="$(OutputPath)/package" />
+    <ZipDirectory
+      SourceDirectory="$(OutputPath)/package"
+      DestinationFile="$(OutputPath)/package.zip"
+      Overwrite="true"
+    />
+  </Target>
 </Project>
