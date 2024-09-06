@@ -1,4 +1,0 @@
-C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\bin\Release\netstandard2.1\win-x64\publish\TooManySuits.dll
-C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\bin\Release\netstandard2.1\win-x64\publish\TooManySuits.deps.json
-C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\bin\Release\netstandard2.1\win-x64\publish\TooManySuits.pdb
-C:\Users\Nathan Roberts\RiderProjects\TooManySuits\TooManySuits\bin\Release\netstandard2.1\win-x64\publish\MoreSuits.dll
