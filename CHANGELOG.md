@@ -4,6 +4,7 @@
   - Fixed a bug where the text above the rack would stay at the landing location after taking off.
   - Removed assembly reference on MoreSuits (now accessed via reflection).
   - Added support for LobbyCompatibility
+  - All changes listed were done by peelz (https://github.com/notpeelz) (https://thunderstore.io/c/lethal-company/p/notpeelz/)
 
 - 1.1.0
   - Complete recoding and reorganization of the mod, making it easier to read from a developer's standpoint and more efficient and of higher quality for the user.
