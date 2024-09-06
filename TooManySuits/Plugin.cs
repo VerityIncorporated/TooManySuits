@@ -12,7 +12,7 @@ using static BepInEx.Logging.Logger;
 
 namespace TooManySuits;
 
-[BepInPlugin("verity.TooManySuits", "Too Many Suits", "1.1.0")]
+[BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 [BepInDependency(MoreSuitsGuid, BepInDependency.DependencyFlags.HardDependency)]
 [LobbyCompatibility(CompatibilityLevel.ClientOnly, VersionStrictness.None)]
 public class Plugin : BaseUnityPlugin
