@@ -1,21 +1,14 @@
 # TooManySuits
 
-Installation
--
+A [More Suits](https://thunderstore.io/c/lethal-company/p/x753/More_Suits/) addon that adds pages to the suit rack.
 
-- Install BepInEx.
-- Download and install More Suits.
-- Download and install TooManySuits.
+![screenshot](https://i.imgur.com/uuvyEjo.png)
 
-Default Controls
--
+## Default Controls
 
-- Next Page: n
-- Back Page: b
+- Next page: `n`
+- Back page: `b`
 
-These are configurable in the config, located at Lethal Company\BepInEx\config\verity.TooManySuits.cfg
+## Support
 
-Notice
--
-
-Please report any bugs to me in the Lethal Company Modding discord.
+Please report any bugs to me in the [Lethal Company Modding discord](https://discord.com/invite/lcmod).
