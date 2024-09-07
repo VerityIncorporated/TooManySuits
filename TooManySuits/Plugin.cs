@@ -1,10 +1,9 @@
-﻿using System.Reflection;
+using System.Reflection;
 using BepInEx;
+using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using LobbyCompatibility.Attributes;
-using LobbyCompatibility.Enums;
 using TooManySuits.Suits;
 using TooManySuits.UI;
 using UnityEngine;
@@ -14,7 +13,6 @@ namespace TooManySuits;
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 [BepInDependency(MoreSuitsGuid)]
-[LobbyCompatibility(CompatibilityLevel.ClientOnly, VersionStrictness.None)]
 public class Plugin : BaseUnityPlugin
 {
     internal const string MoreSuitsGuid = "x753.More_Suits";
@@ -41,6 +39,11 @@ public class Plugin : BaseUnityPlugin
         pluginGameObject.AddComponent<TooManySuits>();
         pluginGameObject.hideFlags = HideFlags.HideAndDontSave;
         DontDestroyOnLoad(pluginGameObject);
+
+        if (Chainloader.PluginInfos.ContainsKey("BMX.LobbyCompatibility"))
+        {
+            Compatibility.LobbyCompatibility.Init();
+        }
     }
 }
 
