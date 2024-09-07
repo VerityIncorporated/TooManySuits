@@ -1,6 +1,6 @@
 {
     "name": "TooManySuits",
-    "version_number": "1.1.1",
+    "version_number": "1.1.2",
     "website_url": "https://github.com/VerityIncorporated/TooManySuits",
     "description": "More Suits Addon that adds pages to the suit rack.",
     "dependencies": [

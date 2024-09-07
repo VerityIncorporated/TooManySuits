@@ -1,3 +1,7 @@
+- 1.1.2
+ - Fixed a bug which spammed the console with NullReferenceException's. (Verity)
+ - Made LobbyCompatibility a soft dependency. (1A3) (https://github.com/1A3Dev) (https://thunderstore.io/c/lethal-company/p/Dev1A3/)
+
 - 1.1.1
   - Fixed a bug where equipping a suit wouldn't get networked if other players hadn't visited all pages prior to equipping.
   - Fixed a bug where the text above the rack would appear at the landing location before the ship finished landing.
