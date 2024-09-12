@@ -1,4 +1,4 @@
-- Unreleased
+- 2.0.0
   - Implemented in-world clickable buttons.
   - Removed keybinds.
   - Fixed a bug where the rack wouldn't get updated properly if a suit was bought from the terminal.
