@@ -1,6 +1,17 @@
+- Unreleased
+  - Implemented in-world clickable buttons.
+  - Removed keybinds.
+  - Fixed a bug where the rack wouldn't get updated properly if a suit was bought from the terminal.
+  - Fixed centering of label.
+  - Changed font of label to VGA 437.
+  - The label now properly reacts to lighting and disappears when lights are turned off.
+  - Refactored and simplified code internals.
+  - Removed dependency on MoreSuit's `MakeSuitsFitOnRack` setting.
+    The gap between suits is now calculated exclusively using our `SuitsPerPage` setting.
+
 - 1.1.2
- - Fixed a bug which spammed the console with NullReferenceException's. (Verity)
- - Made LobbyCompatibility a soft dependency. (1A3) (https://github.com/1A3Dev) (https://thunderstore.io/c/lethal-company/p/Dev1A3/)
+  - Fixed a bug which spammed the console with NullReferenceException's. (Verity)
+  - Made LobbyCompatibility a soft dependency. (1A3) (https://github.com/1A3Dev) (https://thunderstore.io/c/lethal-company/p/Dev1A3/)
 
 - 1.1.1
   - Fixed a bug where equipping a suit wouldn't get networked if other players hadn't visited all pages prior to equipping.
