@@ -21,9 +21,9 @@ public class TooManySuits : BaseUnityPlugin
 
     internal static AssetManager AssetManager { get; } = new();
 
-    internal static new ManualLogSource Logger { get; private set; } = null!;
+    internal new static ManualLogSource Logger { get; private set; } = null!;
 
-    internal static new Config Config { get; private set; } = null!;
+    internal new static Config Config { get; private set; } = null!;
 
     private void Awake()
     {

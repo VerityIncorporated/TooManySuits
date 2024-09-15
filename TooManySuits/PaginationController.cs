@@ -20,9 +20,9 @@ public class PaginationController : MonoBehaviour
 
     public int SuitsPerPage { get; set; }
 
-    public int CurrentPage { get; private set; }
+    private int CurrentPage { get; set; }
 
-    public int PageCount { get; private set; }
+    private int PageCount { get; set; }
 
     private static Sprite FindInteractIcon()
     {
@@ -49,8 +49,8 @@ public class PaginationController : MonoBehaviour
             tmp.text = text;
             tmp.font = TooManySuits.AssetManager.VGA437Font;
             tmp.fontMaterial = TooManySuits.AssetManager.VGA437Font.material;
-            tmp.color = new(255, 255, 255, 255);
-            tmp.outlineColor = new(0, 0, 0, 255);
+            tmp.color = new Color(255, 255, 255, 255);
+            tmp.outlineColor = new Color32(0, 0, 0, 255);
             tmp.outlineWidth = 0.25f;
             return tmp;
         }
@@ -65,11 +65,11 @@ public class PaginationController : MonoBehaviour
             trigger.oneHandedItemAllowed = true;
             trigger.holdInteraction = false;
             trigger.interactCooldown = false;
-            trigger.onInteract = new();
-            trigger.onInteractEarly = new();
-            trigger.onCancelAnimation = new();
-            trigger.onStopInteract = new();
-            trigger.holdingInteractEvent = new();
+            trigger.onInteract = new InteractEvent();
+            trigger.onInteractEarly = new InteractEvent();
+            trigger.onCancelAnimation = new InteractEvent();
+            trigger.onStopInteract = new InteractEvent();
+            trigger.holdingInteractEvent = new InteractEventFloat();
             trigger.hoverTip = "";
             trigger.disabledHoverTip = "";
             trigger.hoverIcon = icon;
