@@ -1,52 +1,39 @@
-﻿using System.Collections;
 using HarmonyLib;
-using TooManySuits.Suits;
 using UnityEngine;
 
 namespace TooManySuits.Hooks;
 
-[HarmonyPatch(typeof(StartOfRound), "Start")]
-public class GameStart
+[HarmonyPatch(typeof(StartOfRound))]
+internal class GameStart
 {
-    private static Coroutine _waitForPlayerCoroutine = null!;
-
     [HarmonyPostfix]
-    public static void GameStartHook()
+    [HarmonyPatch("Start")]
+    [HarmonyAfter(TooManySuits.MoreSuitsGuid)]
+    private static void GameStartHook()
     {
-        var allSuits = Resources.FindObjectsOfTypeAll<UnlockableSuit>().OrderBy(suit => suit.syncedSuitID.Value).ToArray();
-        var validSuits = allSuits.Where(suit => suit.IsSpawned);
+        var pageLabelGO = new GameObject("TooManySuitsPageLabel");
+        pageLabelGO.SetActive(false);
 
-        SuitManager.Instance.UpdateSuits(validSuits);
+        var pageLabelTransform = pageLabelGO.AddComponent<RectTransform>();
+        pageLabelTransform.SetParent(StartOfRound.Instance.rightmostSuitPosition, false);
+        pageLabelTransform.localPosition = Vector3.zero;
+        pageLabelTransform.localEulerAngles = Vector3.zero;
+        pageLabelTransform.localScale = Vector3.one * TooManySuits.Config.LabelScale * 0.05f;
 
-        _waitForPlayerCoroutine = TooManySuits.Instance.StartCoroutine(WaitForPlayerAndSetUpCanvas());
-    }
+        var paginationController = pageLabelGO.AddComponent<PaginationController>();
+        paginationController.SuitsPerPage = TooManySuits.Config.SuitsPerPage;
 
-    private static IEnumerator WaitForPlayerAndSetUpCanvas()
-    {
-        while (StartOfRound.Instance.localPlayerController == null)
-        {
-            yield return null;
-        }
+        // This is totally guesstimated. The math is probably wrong, but it looks
+        // centered enough to me... oh well
+        var centerOffset = StartOfRound.Instance.rightmostSuitPosition.forward
+            * (TooManySuits.SuitThickness * (TooManySuits.VanillaSuitsPerPage - 1.5f)) / 2f;
 
-        var suitRackPrefab = TooManySuits.SuitRackPrefab;
-        if (suitRackPrefab != null)
-        {
-            suitRackPrefab.SetActive(true);
+        var autoParentToShip = pageLabelGO.AddComponent<AutoParentToShip>();
+        autoParentToShip.overrideOffset = true;
+        autoParentToShip.positionOffset = new Vector3(-2.45f, 3f, -8.41f) + centerOffset;
+        autoParentToShip.rotationOffset = new Vector3(0f, 180f, 0f);
 
-            var panelCanvas = suitRackPrefab.GetComponentInChildren<Canvas>();
-
-            panelCanvas.renderMode = RenderMode.WorldSpace;
-            panelCanvas.worldCamera = StartOfRound.Instance.localPlayerController.gameplayCamera;
-
-            panelCanvas.transform.position = StartOfRound.Instance.shipBounds.bounds.center - new Vector3(2.8992f, 0.7998f, 2f);
-            panelCanvas.transform.rotation = Quaternion.Euler(0, 180, 0);
-            panelCanvas.transform.localScale = new Vector3(Plugin.TextScale.Value, Plugin.TextScale.Value, Plugin.TextScale.Value);
-        }
-        else
-        {
-            TooManySuits.GlobalLogSource.LogError("Suit Rack Prefab is null!");
-        }
-
-        _waitForPlayerCoroutine = null!;
+        pageLabelGO.SetActive(true);
+        TooManySuits.SuitManager.UpdateSuits();
     }
 }

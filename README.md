@@ -2,12 +2,11 @@
 
 A [More Suits](https://thunderstore.io/c/lethal-company/p/x753/More_Suits/) addon that adds pages to the suit rack.
 
-![screenshot](https://i.imgur.com/uuvyEjo.png)
+![screenshot](https://i.imgur.com/qMoLq3c.png)
 
-## Default Controls
-
-- Next page: `n`
-- Back page: `b`
+Includes clickable in-world buttons, compatible with
+[LCVR](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR/)
+and controllers.
 
 ## Support
 
