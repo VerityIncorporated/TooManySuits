@@ -1,15 +1,15 @@
 using HarmonyLib;
 using UnityEngine;
 
-namespace TooManySuits.Hooks;
+namespace TooManySuits;
 
-[HarmonyPatch(typeof(StartOfRound))]
-internal class GameStart
+[HarmonyPatch]
+internal class Patches
 {
     [HarmonyPostfix]
-    [HarmonyPatch("Start")]
+    [HarmonyPatch(typeof(StartOfRound), "Start")]
     [HarmonyAfter(TooManySuits.MoreSuitsGuid)]
-    private static void GameStartHook()
+    private static void StartPatch()
     {
         var pageLabelGO = new GameObject("TooManySuitsPageLabel");
         pageLabelGO.SetActive(false);
@@ -34,6 +34,14 @@ internal class GameStart
         autoParentToShip.rotationOffset = new Vector3(0f, 180f, 0f);
 
         pageLabelGO.SetActive(true);
+        TooManySuits.SuitManager.UpdateSuits();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(StartOfRound), "PositionSuitsOnRack")]
+    [HarmonyAfter(TooManySuits.MoreSuitsGuid)]
+    private static void PositionSuitsOnRackPatch()
+    {
         TooManySuits.SuitManager.UpdateSuits();
     }
 }
