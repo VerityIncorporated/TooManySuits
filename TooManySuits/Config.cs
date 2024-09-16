@@ -28,7 +28,7 @@ internal class Config
                 max: LabelScaleMax
             );
 
-            if (Mathf.Approximately(value, _configLabelScale.Value))
+            if (!Mathf.Approximately(value, _configLabelScale.Value))
             {
                 TooManySuits.Logger.LogWarning(
                     "LabelScale exceeds the range of"
