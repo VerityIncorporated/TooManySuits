@@ -1,3 +1,6 @@
+- Unreleased
+  - Removed dependency on InputUtils from manifest.
+
 - 2.0.0
   - Implemented in-world clickable buttons.
   - Removed keybinds.
