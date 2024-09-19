@@ -1,5 +1,8 @@
+- 2.0.1
+  - Removed dependency on InputUtils from manifest.
+
 - 2.0.0
-  - Implemented in-world clickable buttons.
+  - Implemented in-world buttons.
   - Removed keybinds.
   - Fixed a bug where the rack wouldn't get updated properly if a suit was bought from the terminal.
   - Fixed centering of label.
