@@ -1,4 +1,4 @@
-- Unreleased
+- 2.0.1
   - Removed dependency on InputUtils from manifest.
 
 - 2.0.0
