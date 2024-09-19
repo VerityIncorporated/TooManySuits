@@ -4,7 +4,7 @@ A [More Suits](https://thunderstore.io/c/lethal-company/p/x753/More_Suits/) addo
 
 ![screenshot](https://i.imgur.com/qMoLq3c.png)
 
-Includes clickable in-world buttons, compatible with
+Includes in-world buttons, compatible with
 [LCVR](https://thunderstore.io/c/lethal-company/p/DaXcess/LethalCompanyVR/)
 and controllers.
 
