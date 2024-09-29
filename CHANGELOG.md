@@ -1,5 +1,6 @@
 - 2.0.1
   - Removed dependency on InputUtils from manifest.
+  - Reduced the sheen of the label when shining a light directly towards it.
 
 - 2.0.0
   - Implemented in-world buttons.
