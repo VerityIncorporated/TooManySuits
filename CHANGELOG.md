@@ -1,6 +1,7 @@
 - 2.0.1
   - Removed dependency on InputUtils from manifest.
   - Reduced the sheen of the label when shining a light directly towards it.
+  - Added a workaround to help prevent other mods from interfering with our Harmony patches.
 
 - 2.0.0
   - Implemented in-world buttons.
