@@ -8,6 +8,7 @@ internal class Patches
 {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(StartOfRound), "Start")]
+    [HarmonyPriority(Priority.High)]
     [HarmonyAfter(TooManySuits.MoreSuitsGuid)]
     private static void StartPatch()
     {
@@ -39,6 +40,7 @@ internal class Patches
 
     [HarmonyPostfix]
     [HarmonyPatch(typeof(StartOfRound), "PositionSuitsOnRack")]
+    [HarmonyPriority(Priority.High)]
     [HarmonyAfter(TooManySuits.MoreSuitsGuid)]
     private static void PositionSuitsOnRackPatch()
     {

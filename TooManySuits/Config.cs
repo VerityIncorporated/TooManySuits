@@ -1,83 +1,16 @@
 using BepInEx.Configuration;
-using UnityEngine;
 
 namespace TooManySuits;
 
 internal class Config
 {
-    private const float LabelScaleMin = 0.5f;
-
-    private const float LabelScaleMax = 3f;
-
     private readonly ConfigEntry<float> _configLabelScale;
 
-    private float? _labelScale;
-
-    public float LabelScale
-    {
-        get
-        {
-            if (_labelScale != null)
-            {
-                return (float)_labelScale;
-            }
-
-            var value = Math.Clamp(
-                value: _configLabelScale.Value,
-                min: LabelScaleMin,
-                max: LabelScaleMax
-            );
-
-            if (!Mathf.Approximately(value, _configLabelScale.Value))
-            {
-                TooManySuits.Logger.LogWarning(
-                    "LabelScale exceeds the range of"
-                    + $" [{LabelScaleMin}, {LabelScaleMax}];"
-                    + $" clamping value to {value}"
-                );
-            }
-
-            _labelScale = value;
-            return value;
-        }
-    }
-
-    private const int SuitsPerPageMin = TooManySuits.VanillaSuitsPerPage;
-
-    private const int SuitsPerPageMax = 20;
+    public float LabelScale => _configLabelScale.Value;
 
     private readonly ConfigEntry<int> _configSuitsPerPage;
 
-    private int? _suitsPerPage;
-
-    public int SuitsPerPage
-    {
-        get
-        {
-            if (_suitsPerPage != null)
-            {
-                return (int)_suitsPerPage;
-            }
-
-            var value = Math.Clamp(
-                value: _configSuitsPerPage.Value,
-                min: SuitsPerPageMin,
-                max: SuitsPerPageMax
-            );
-
-            if (value != _configSuitsPerPage.Value)
-            {
-                TooManySuits.Logger.LogWarning(
-                    "SuitsPerPage exceeds the range of"
-                    + $" [{SuitsPerPageMin}, {SuitsPerPageMax}];"
-                    + $" clamping value to {value}"
-                );
-            }
-
-            _suitsPerPage = value;
-            return value;
-        }
-    }
+    public int SuitsPerPage => _configSuitsPerPage.Value;
 
     public Config(ConfigFile cfg)
     {
@@ -86,7 +19,10 @@ internal class Config
             section: SectionPagination,
             key: "SuitsPerPage",
             defaultValue: TooManySuits.VanillaSuitsPerPage,
-            description: "Number of suits per page in the suit rack."
+            configDescription: new ConfigDescription(
+                description: "Number of suits per page in the suit rack.",
+                acceptableValues: new AcceptableValueRange<int>(TooManySuits.VanillaSuitsPerPage, 20)
+            )
         );
 
         const string SectionUI = "UI";
@@ -94,7 +30,10 @@ internal class Config
             section: SectionUI,
             key: "LabelScale",
             defaultValue: 1f,
-            description: "Size of the text above the suit rack."
+            configDescription: new ConfigDescription(
+                description: "Size of the text above the suit rack.",
+                acceptableValues: new AcceptableValueRange<float>(0.5f, 3f)
+            )
         );
 
         cfg.OrphanedEntries.Clear();
